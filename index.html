@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wazuh Agent — Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg:       #0a0c0f;
+    --surface:  #0f1318;
+    --border:   #1e2530;
+    --border-hi:#2e3d50;
+    --text:     #c8d6e5;
+    --muted:    #546a82;
+    --accent:   #00e5a0;
+    --warn:     #f59e0b;
+    --accent2:  #0ea5e9;
+    --purple:   #a78bfa;
+    --mono:     'IBM Plex Mono', monospace;
+    --sans:     'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(30,37,48,.4) 39px, rgba(30,37,48,.4) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(30,37,48,.4) 39px, rgba(30,37,48,.4) 40px);
+    pointer-events: none; z-index: 0;
+  }
+
+  .shell {
+    position: relative; z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 100px;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 52px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 10px var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:.4; transform:scale(.75); }
+  }
+  .brand-name {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+  }
+  .topbar-badge {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 3px;
+    padding: 3px 10px; letter-spacing: .08em;
+  }
+
+  /* ── WELCOME ── */
+  .welcome {
+    margin-bottom: 52px;
+    opacity: 0; animation: fadeUp .45s .05s ease forwards;
+  }
+  .welcome-tag {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: .2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .welcome-tag::before {
+    content: ''; display: inline-block;
+    width: 24px; height: 1px; background: var(--accent);
+  }
+  .welcome h1 {
+    font-size: clamp(28px, 4.5vw, 40px); font-weight: 800;
+    letter-spacing: -.02em; color: #eaf2ff; line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .welcome h1 span { color: var(--accent); }
+  .welcome p { font-size: 14px; color: var(--muted); max-width: 500px; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── SECTION ── */
+  .section {
+    margin-bottom: 48px;
+    opacity: 0; animation: fadeUp .45s ease forwards;
+  }
+  .section:nth-child(1) { animation-delay: .10s; }
+  .section:nth-child(2) { animation-delay: .20s; }
+  .section:nth-child(3) { animation-delay: .30s; }
+
+  .sec-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 22px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .sec-label.silk { color: var(--purple); }
+  .sec-label.silk::after { background: rgba(167,139,250,.25); }
+
+  /* ── INPUT ── */
+  .input-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px; display: block;
+  }
+  .input-row { display: flex; gap: 10px; }
+  input[type="text"] {
+    flex: 1;
+    background: #080a0d; border: 1px solid var(--border-hi);
+    color: var(--text); font-family: var(--mono); font-size: 14px;
+    padding: 11px 16px; border-radius: 4px;
+    outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  input[type="text"]::placeholder { color: var(--muted); }
+  input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,.1);
+  }
+  .btn {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: 11px 18px; border-radius: 4px; border: none;
+    cursor: pointer; transition: all .18s; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 7px;
+    text-decoration: none;
+  }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border-hi);
+  }
+  .btn-ghost:hover { color: var(--text); }
+  .btn-download {
+    background: rgba(167,139,250,.12); color: var(--purple);
+    border: 1px solid rgba(167,139,250,.35);
+  }
+  .btn-download:hover {
+    background: rgba(167,139,250,.22); border-color: var(--purple);
+    box-shadow: 0 0 14px rgba(167,139,250,.2);
+  }
+  .btn-download svg { width: 13px; height: 13px; }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap { margin-top: 18px; display: none; }
+  .code-wrap.visible { display: block; animation: fadeUp .28s ease forwards; }
+
+  .code-header {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0c1016; border: 1px solid var(--border);
+    border-bottom: none; border-radius: 6px 6px 0 0;
+    padding: 9px 16px;
+  }
+  .code-lang {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .code-lang::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ── COPY BUTTON ── */
+  .copy-btn {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    color: var(--muted); background: none;
+    border: 1px solid var(--border-hi);
+    border-radius: 3px; padding: 5px 13px;
+    cursor: pointer; transition: color .15s, border-color .15s;
+    display: inline-flex; align-items: center; gap: 6px;
+    user-select: none;
+  }
+  .copy-btn:hover   { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied  { color: var(--accent); border-color: var(--accent); }
+  .copy-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+  pre {
+    background: #0c1016; border: 1px solid var(--border);
+    border-radius: 0 0 6px 6px;
+    padding: 18px 20px; overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.8;
+    color: var(--text); white-space: pre-wrap; word-break: break-all;
+  }
+  .t-key  { color: var(--warn); }
+  .t-val  { color: var(--accent); }
+  .t-cmd  { color: var(--accent2); }
+  .t-flag { color: var(--purple); }
+
+  /* ── STEPS ── */
+  .step-list { display: flex; flex-direction: column; }
+  .step { display: flex; gap: 0; align-items: stretch; }
+  .step-spine {
+    display: flex; flex-direction: column; align-items: center;
+    width: 44px; flex-shrink: 0;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    border-radius: 50%; border: 1px solid rgba(0,229,160,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--accent); margin-top: 18px; flex-shrink: 0;
+  }
+  .step-num.silk { border-color: rgba(167,139,250,.35); color: var(--purple); }
+  .step-line { width: 1px; flex: 1; background: var(--border); margin: 6px 0 0; }
+  .step:last-child .step-line { display: none; }
+  .step-content { flex: 1; padding: 16px 0 26px 6px; }
+  .step-content h4 { font-size: 14px; font-weight: 700; color: #eaf2ff; margin-bottom: 6px; }
+  .step-content p  { font-size: 13px; color: var(--muted); line-height: 1.75; }
+  .step-content p + p { margin-top: 7px; }
+  .step-content code {
+    font-family: var(--mono); font-size: 12px;
+    background: rgba(0,229,160,.07); border: 1px solid rgba(0,229,160,.18);
+    color: var(--accent); padding: 1px 7px; border-radius: 3px;
+  }
+  .step-content code.purple {
+    background: rgba(167,139,250,.08); border-color: rgba(167,139,250,.25);
+    color: var(--purple);
+  }
+
+  /* sub-command block */
+  .sub-cmd { margin-top: 14px; background: #0c1016; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+  .sub-cmd-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-bottom: 1px solid var(--border); }
+  .sub-cmd-lang { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .sub-cmd pre  { border: none; border-radius: 0; padding: 14px 16px; font-size: 12px; }
+
+  /* ── NOTICE ── */
+  .notice {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 13px 16px; border-radius: 5px; margin-top: 14px;
+  }
+  .notice-warn   { background: rgba(245,158,11,.07);  border: 1px solid rgba(245,158,11,.22); }
+  .notice-info   { background: rgba(14,165,233,.07);  border: 1px solid rgba(14,165,233,.20); }
+  .notice-purple { background: rgba(167,139,250,.07); border: 1px solid rgba(167,139,250,.22); }
+  .notice-icon   { font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+  .notice-body   { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+  .notice-body strong { font-weight: 700; display: block; margin-bottom: 2px; }
+  .notice-warn   .notice-body strong { color: var(--warn); }
+  .notice-info   .notice-body strong { color: var(--accent2); }
+  .notice-purple .notice-body strong { color: var(--purple); }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  /* silk divider */
+  .silk-divider { display: flex; align-items: center; gap: 16px; margin: 48px 0 0; }
+  .silk-divider-line { flex: 1; height: 1px; background: rgba(167,139,250,.2); }
+  .silk-divider-badge {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: .16em; text-transform: uppercase;
+    color: var(--purple); border: 1px solid rgba(167,139,250,.35);
+    border-radius: 3px; padding: 4px 12px;
+  }
+
+  /* ── VERIFY ── */
+  .verify-grid { display: flex; flex-direction: column; gap: 10px; }
+  .verify-item {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 5px; padding: 15px 18px; transition: border-color .2s;
+  }
+  .verify-item:hover { border-color: var(--border-hi); }
+  .verify-badge {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid rgba(0,229,160,.3);
+    border-radius: 3px; padding: 3px 9px; flex-shrink: 0; margin-top: 1px;
+  }
+  .verify-body h4 { font-size: 13px; font-weight: 700; color: #eaf2ff; margin-bottom: 4px; }
+  .verify-body p  { font-size: 12.5px; color: var(--muted); line-height: 1.65; }
+  .verify-body code {
+    font-family: var(--mono); font-size: 12px;
+    background: rgba(0,229,160,.07); border: 1px solid rgba(0,229,160,.18);
+    color: var(--accent); padding: 1px 7px; border-radius: 3px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border); padding-top: 24px;
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+  }
+  .footer-live { display: flex; align-items: center; gap: 8px; }
+  .footer-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 7px var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <span class="brand-name">EDR // Agent Setup</span>
+    </div>
+    <span class="topbar-badge">Wazuh v4.14.4 + SilkETW</span>
+  </header>
+
+  <!-- WELCOME -->
+  <div class="welcome">
+    <div class="welcome-tag">Onboarding</div>
+    <h1>Install your<br /><span>Wazuh agent</span></h1>
+    <p>Enter a name for this endpoint, copy the generated command, and follow the steps below. Once Wazuh is running, set up SilkETW to start collecting telemetry.</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PART 1 — WAZUH
+  ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="sec-label">Step 1 — Wazuh Agent Installation</div>
+
+    <div class="step-list">
+
+      <!-- 1: name + command -->
+      <div class="step">
+        <div class="step-spine">
+          <div class="step-num">1</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h4>Name your agent &amp; generate the install command</h4>
+          <p>Enter a unique name for this endpoint — it will identify the machine in your Wazuh dashboard.</p>
+
+          <div style="margin-top:14px;">
+            <label class="input-label" for="agentName">Agent Name</label>
+            <div class="input-row">
+              <input
+                type="text"
+                id="agentName"
+                placeholder="e.g. WIN-WORKSTATION-01"
+                maxlength="48"
+                autocomplete="off"
+                spellcheck="false"
+                oninput="buildCommand()"
+              />
+              <button class="btn btn-ghost" onclick="clearInput()">Clear</button>
+            </div>
+          </div>
+
+          <div class="code-wrap" id="cmdWrap">
+            <div class="code-header">
+              <span class="code-lang">powershell — administrator</span>
+              <button class="copy-btn" id="copyBtn" onclick="copyText('cmdPlain', 'copyBtn')">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <rect x="4" y="4" width="9" height="11" rx="1.5"/>
+                  <path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1"/>
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <!-- hidden plain-text target for clipboard -->
+            <textarea id="cmdPlain" style="position:absolute;left:-9999px;top:-9999px;" readonly></textarea>
+            <pre id="cmdPre"></pre>
+          </div>
+
+          <div class="notice notice-warn" id="adminNotice" style="display:none;">
+            <span class="notice-icon">⚠️</span>
+            <div class="notice-body">
+              <strong>Run as Administrator</strong>
+              Right-click PowerShell → <em>Run as administrator</em>, paste the command above, and press Enter.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2: wait -->
+      <div class="step">
+        <div class="step-spine">
+          <div class="step-num">2</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h4>Wait for installation to complete</h4>
+          <p>The command silently downloads the MSI and installs the agent — about <strong>30 seconds</strong>. No progress window will appear; wait until the terminal prompt returns.</p>
+          <p>The agent registers itself with the Wazuh Manager at <code>10.20.8.34</code> during this step.</p>
+        </div>
+      </div>
+
+      <!-- 3: start service -->
+      <div class="step">
+        <div class="step-spine">
+          <div class="step-num">3</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h4>Start the Wazuh service</h4>
+          <p>In the <strong>same elevated PowerShell window</strong>, run:</p>
+          <div class="sub-cmd">
+            <div class="sub-cmd-head">
+              <span class="sub-cmd-lang">powershell</span>
+              <button class="copy-btn" id="startBtn" onclick="copyText('startPlain', 'startBtn')">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <rect x="4" y="4" width="9" height="11" rx="1.5"/>
+                  <path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1"/>
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <textarea id="startPlain" style="position:absolute;left:-9999px;" readonly>NET START Wazuh</textarea>
+            <pre><span class="t-cmd">NET START</span> <span class="t-val">Wazuh</span></pre>
+          </div>
+          <div class="notice notice-info">
+            <span class="notice-icon">ℹ️</span>
+            <div class="notice-body">
+              <strong>Expected output</strong>
+              You should see <em>"The Wazuh service was started successfully."</em>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VERIFY -->
+  <div class="section">
+    <div class="sec-label">Verify Agent Connection</div>
+    <div class="verify-grid">
+      <div class="verify-item">
+        <span class="verify-badge">A</span>
+        <div class="verify-body">
+          <h4>Check service status on the endpoint</h4>
+          <p>In PowerShell: <code>Get-Service Wazuh</code> — Status should show <code>Running</code>.</p>
+        </div>
+      </div>
+      <!-- <div class="verify-item">
+        <span class="verify-badge">B</span>
+        <div class="verify-body">
+          <h4>List agents on the Wazuh Manager</h4>
+          <p>SSH into <code>172.16.20.62</code> and run <code>/var/ossec/bin/agent_control -l</code>. Your agent should appear as <code>Active</code>.</p>
+        </div>
+      </div>
+      <div class="verify-item">
+        <span class="verify-badge">C</span>
+        <div class="verify-body">
+          <h4>Confirm in the Wazuh Web UI</h4>
+          <p>Open the Wazuh dashboard → <em>Agents</em>. Your registered agent should appear with a green <code>Active</code> badge.</p>
+        </div>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- SILK DIVIDER -->
+  <div class="silk-divider">
+    <div class="silk-divider-line"></div>
+    <span class="silk-divider-badge">Next — SilkETW Telemetry</span>
+    <div class="silk-divider-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       PART 2 — SILKETW
+  ════════════════════════════════════════════════ -->
+  <div class="section" style="margin-top:40px;">
+    <div class="sec-label silk">Step 2 — SilkETW Setup</div>
+
+    <div class="notice notice-purple" style="margin-bottom:24px;">
+      <span class="notice-icon">🔬</span>
+      <div class="notice-body">
+        <strong>What this does</strong>
+        SilkETW hooks into Windows Event Tracing (ETW) to capture kernel-level telemetry — process creation, DNS queries, PowerShell activity, AMSI events, and more — writing structured JSON logs that Wazuh ingests for detection.
+      </div>
+    </div>
+
+    <div class="step-list">
+
+      <!-- S1: download -->
+      <div class="step">
+        <div class="step-spine">
+          <div class="step-num silk">1</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h4>Download the setup script</h4>
+          <p>Click below to download the automated SilkETW installer. Save it somewhere easy to reach — your Desktop or <code class="purple">C:\</code> works fine.</p>
+          <div style="margin-top:16px;">
+            <a class="btn btn-download" href="#" onclick="downloadScript(); return false;">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M8 2v8M5 7l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12h12" stroke-linecap="round"/>
+              </svg>
+              Download Setup-SilkETW.ps1
+            </a>
+          </div>
+          <div class="notice notice-purple" style="margin-top:14px;">
+            <span class="notice-icon">📋</span>
+            <div class="notice-body">
+              <strong>What the script does</strong>
+              Downloads the latest SilkETW from GitHub, installs VC++ runtime if missing, configures 11 ETW collectors (DNS, PowerShell, AMSI, Kerberos, NTLM, WMI, .NET, kernel process/file/registry, LDAP), and starts SilkService automatically.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- S2: unblock -->
+      <div class="step">
+        <div class="step-spine">
+          <div class="step-num silk">2</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h4>Unblock the script</h4>
+          <p>Windows blocks scripts downloaded from the internet by default — this one command removes that restriction so PowerShell can run it.</p>
+          <p>In an <strong>elevated PowerShell</strong>, navigate to where you saved the file and run:</p>
+          <div class="sub-cmd">
+            <div class="sub-cmd-head">
+              <span class="sub-cmd-lang">powershell — administrator</span>
+              <button class="copy-btn" id="unblockBtn" onclick="copyText('unblockPlain', 'unblockBtn')">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <rect x="4" y="4" width="9" height="11" rx="1.5"/>
+                  <path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1"/>
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <textarea id="unblockPlain" style="position:absolute;left:-9999px;" readonly>Unblock-File .\Setup-SilkETW.ps1</textarea>
+            <pre><span class="t-cmd">Unblock-File</span> <span class="t-val">.\Setup-SilkETW.ps1</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- S3: run -->
+      <div class="step">
+        <div class="step-spine">
+          <div class="step-num silk">3</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <h4>Run the setup script</h4>
+          <p>Execute with <code class="purple">Bypass</code> execution policy so it runs without restriction:</p>
+          <div class="sub-cmd">
+            <div class="sub-cmd-head">
+              <span class="sub-cmd-lang">powershell — administrator</span>
+              <button class="copy-btn" id="runBtn" onclick="copyText('runPlain', 'runBtn')">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                  <rect x="4" y="4" width="9" height="11" rx="1.5"/>
+                  <path d="M11 4V3a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h1"/>
+                </svg>
+                <span>Copy</span>
+              </button>
+            </div>
+            <textarea id="runPlain" style="position:absolute;left:-9999px;" readonly>powershell -ExecutionPolicy Bypass -File .\Setup-SilkETW.ps1</textarea>
+            <pre><span class="t-cmd">powershell</span> <span class="t-flag">-ExecutionPolicy Bypass</span> <span class="t-flag">-File</span> <span class="t-val">.\Setup-SilkETW.ps1</span></pre>
+          </div>
+          <div class="notice notice-info" style="margin-top:14px;">
+            <span class="notice-icon">ℹ️</span>
+            <div class="notice-body">
+              <strong>Expected output</strong>
+              The script runs 8 steps and ends with <em>"SilkETW Setup Complete"</em>. JSON logs will start appearing in <code>C:\edr\</code>.
+            </div>
+          </div>
+          <div class="notice notice-warn" style="margin-top:10px;">
+            <span class="notice-icon">⚠️</span>
+            <div class="notice-body">
+              <strong>VC++ prompt</strong>
+              If the Visual C++ 2015–2022 Redistributable (x86) is missing, the script will ask to install it — type <strong>Y</strong> and press Enter.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-live">
+      <div class="footer-dot"></div>
+      <span>Wazuh v4.14.4 + SilkETW — EDR Onboarding</span>
+    </div>
+    <span>No data leaves this page.</span>
+  </footer>
+
+</div><!-- /shell -->
+
+<script>
+  /* ── COPY HELPER — works on file://, http://, https:// ─────────────────── */
+  function copyText(textareaId, btnId) {
+    const ta  = document.getElementById(textareaId);
+    const btn = document.getElementById(btnId);
+    const txt = ta.value;
+
+    // Prefer modern clipboard API (requires HTTPS or localhost)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt)
+        .then(()  => flash(btn))
+        .catch(()  => fallbackCopy(ta, btn));   // silently fall back
+    } else {
+      fallbackCopy(ta, btn);
+    }
+  }
+
+  /* execCommand fallback — works on file:// and older browsers */
+  function fallbackCopy(ta, btn) {
+    ta.style.position = 'fixed';
+    ta.style.left     = '0';
+    ta.style.top      = '0';
+    ta.removeAttribute('readonly');
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand('copy');
+      flash(btn);
+    } catch (e) {
+      btn.querySelector('span').textContent = 'Failed';
+      setTimeout(() => { btn.querySelector('span').textContent = 'Copy'; }, 2000);
+    }
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'absolute';
+    ta.style.left     = '-9999px';
+    ta.style.top      = '-9999px';
+  }
+
+  function flash(btn) {
+    const span = btn.querySelector('span');
+    btn.classList.add('copied');
+    span.textContent = '✓ Copied';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      span.textContent = 'Copy';
+    }, 2000);
+  }
+
+  /* ── WAZUH COMMAND BUILDER ─────────────────────────────────────────────── */
+  const RAW = "Invoke-WebRequest -Uri https://packages.wazuh.com/4.x/windows/wazuh-agent-4.14.4-1.msi -OutFile $env:tmp\\wazuh-agent; msiexec.exe /i $env:tmp\\wazuh-agent /q WAZUH_MANAGER='10.20.8.34' WAZUH_AGENT_NAME='PLACEHOLDER' WAZUH_AGENT_GROUP='windows' ";
+
+  function buildCommand() {
+    const name   = document.getElementById('agentName').value.trim();
+    const wrap   = document.getElementById('cmdWrap');
+    const notice = document.getElementById('adminNotice');
+    const pre    = document.getElementById('cmdPre');
+    const ta     = document.getElementById('cmdPlain');
+
+    if (!name) {
+      wrap.classList.remove('visible');
+      notice.style.display = 'none';
+      return;
+    }
+
+    wrap.classList.add('visible');
+    notice.style.display = 'flex';
+
+    const cmd = RAW.replace('PLACEHOLDER', name);
+    ta.value  = cmd;   // plain text for clipboard
+
+    // syntax-highlighted display
+    pre.innerHTML = cmd
+      .replace(/(Invoke-WebRequest|msiexec\.exe)/g,
+               '<span class="t-cmd">$1</span>')
+      .replace(/(WAZUH_MANAGER|WAZUH_AGENT_NAME)/g,
+               '<span class="t-key">$1</span>')
+      .replace(/'([^']+)'/g,
+               (_, v) => `'<span class="t-val">${v}</span>'`);
+  }
+
+  function clearInput() {
+    document.getElementById('agentName').value = '';
+    buildCommand();
+  }
+
+  /* ── SILKETW DOWNLOAD — fetches directly from GitHub ── */
+  const SILKETW_RAW_URL =
+    'https://raw.githubusercontent.com/shriyac04/edr-agent/main/Setup_SilkETW.ps1';
+
+  async function downloadScript() {
+    const btn = document.querySelector('.btn-download');
+    const originalHTML = btn.innerHTML;
+
+    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 2v8M5 7l3 3 3-3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h12" stroke-linecap="round"/></svg> Fetching…';
+    btn.style.pointerEvents = 'none';
+
+    try {
+      const resp = await fetch(SILKETW_RAW_URL);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const text = await resp.text();
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'Setup-SilkETW.ps1';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert('Download failed — make sure Setup-SilkETW.ps1 is committed to the repo.\n\n' + err);
+    } finally {
+      btn.innerHTML = originalHTML;
+      btn.style.pointerEvents = '';
+    }
+  }
+
+</script>
+</body>
+</html>
